@@ -1,5 +1,8 @@
 ### Custom
 
+browserbase/
+script/
+
 claude/run.sh
 run.sh
 .env

@@ -64,6 +64,10 @@ export async function buy(recommendation: Recommendation) {
             devices: ["desktop"],
             locales: ["en-US"],
             operatingSystems: ["macos"],
+          },
+          context: {
+            id: "71bf7583-6922-4e61-ab8e-8885d584b13a",
+            persist: true,
           }
         },
         proxies: [
@@ -105,6 +109,32 @@ function query(wish: Wish) {
   return `${wish.name} under ${wish.budget}${wish.preferred_brands ? `, from ${wish.preferred_brands}` : ""}`
 }
 
+// Assert I'm signed into craigslist
+// async function authenticate(page: any, context: any) {
+//   const session = await storage.getSession();
+//   if (session) {
+//     await context.addCookies([session]);
+
+//     // try to access a protected page
+//     await page.goto("https://www.browserbase.com/overview");
+
+//     if (page.url === "https://www.browserbase.com/overview") {
+//       // no redirect -> we are authenticated, let's skip the authentication flow
+//       return;
+//     }
+//   }
+
+//   await page.goto("https://www.browserbase.com/sign-in");
+
+//   // ... sign-in ...
+//   throw new Error("should've been signed in already")
+
+//   // retrieve User Session Cookie
+//   const cookies = await context.cookies();
+//   const sessionCookie = cookies.find((c) => c.name === "session_id");
+//   await storage.storeSession(sessionCookie);
+// }
+
 /**
  * Check Facebook Marketplace and Craigslist for the user's item.
  * 
@@ -131,7 +161,11 @@ async function useBrowserbase(wish: Wish) {
               devices: ["desktop"],
               locales: ["en-US"],
               operatingSystems: ["macos"],
-            }
+            },
+            context: {
+              id: "71bf7583-6922-4e61-ab8e-8885d584b13a",
+              persist: true,
+            },
           },
           proxies: [
             {
