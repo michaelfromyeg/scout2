@@ -24,7 +24,8 @@ export default function WishList({ session }: { session: Session }) {
       const { data: wishes, error } = await supabase
         .from('wishes')
         .select('*')
-        .order('id', { ascending: true })
+        .order('created_at', { ascending: false })
+        // .order('id', { ascending: true })
 
       if (error) console.log('error', error)
       else setWishes(wishes)
@@ -49,7 +50,7 @@ export default function WishList({ session }: { session: Session }) {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'wishes' },
         (payload) => {
-          setWishes((prev) => [...prev, payload.new as Wish])
+          setWishes((prev) => [payload.new as Wish, ...prev]) // Add new wish at the top
         }
       )
       .subscribe()
@@ -108,7 +109,7 @@ export default function WishList({ session }: { session: Session }) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-gray-100 min-h-screen">
+    <div className="max-w-4xl mx-auto p-6 min-h-screen">
       <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">Your Wishlist</h1>
       <form
         onSubmit={(e) => {
@@ -180,50 +181,89 @@ const Item = ({
   wish: Wish
   recommendations: Recommendation[]
   onDelete: () => void
-}) => (
-  <li className="bg-white shadow-md rounded-lg p-6">
-    <div className="flex justify-between items-center">
-      <div>
-        <h3 className="text-xl font-semibold text-gray-800">{wish.name}</h3>
-        <p className="text-gray-600">Budget: ${wish.budget || 'N/A'}</p>
-        <p className="text-gray-600">Urgency: {wish.urgency}</p>
-        {wish.preferred_brands && (
-          <p className="text-gray-600">Preferred Brands: {wish.preferred_brands}</p>
-        )}
+}) => {
+  const supabase = useSupabaseClient<Database>();
+
+  const approveRecommendation = async (recId: number) => {
+    try {
+      const { data, error } = await supabase
+        .from('recommendations')
+        .update({ approved: true })
+        .eq('id', recId);
+
+      if (error) {
+        console.error('Error approving recommendation:', error.message);
+        return;
+      }
+
+      console.log('Recommendation approved:', data);
+    } catch (error) {
+      console.error('Unexpected error approving recommendation:', error);
+    }
+  };
+
+  return (
+    <li className="bg-white shadow-md rounded-lg p-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-xl font-semibold text-gray-800">{wish.name}</h3>
+          <p className="text-gray-600">Budget: ${wish.budget || 'N/A'}</p>
+          <p className="text-gray-600">Urgency: {wish.urgency}</p>
+          {wish.preferred_brands && (
+            <p className="text-gray-600">Preferred Brands: {wish.preferred_brands}</p>
+          )}
+        </div>
+        <button
+          onClick={onDelete}
+          className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition"
+        >
+          Delete
+        </button>
       </div>
-      <button
-        onClick={onDelete}
-        className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition"
-      >
-        Delete
-      </button>
-    </div>
-    <div className="mt-4">
-      <h4 className="text-lg font-semibold text-gray-800">Recommendations</h4>
-      <ul className="mt-2 space-y-2">
-        {recommendations.length > 0 ? (
-          recommendations.map((rec) => (
-            <li key={rec.id} className="flex justify-between items-center">
-              <a
-                href={rec.product_link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline"
+      <div className="mt-4">
+        <h4 className="text-lg font-semibold text-gray-800">Recommendations</h4>
+        <ul className="mt-2 space-y-2">
+          {recommendations.length > 0 ? (
+            recommendations.map((rec) => (
+              <li
+                key={rec.id}
+                className={`flex justify-between items-center ${
+                  rec.approved ? 'bg-green-50' : ''
+                } p-2 rounded-md`}
               >
-                {rec.product_name}
-              </a>
-              <span className="text-gray-600">
-                {rec.product_price ? `$${rec.product_price}` : 'Price N/A'} ({rec.source})
-              </span>
-            </li>
-          ))
-        ) : (
-          <li className="text-gray-600">No recommendations yet.</li>
-        )}
-      </ul>
-    </div>
-  </li>
-)
+                <div>
+                  <a
+                    href={rec.product_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline"
+                  >
+                    {rec.product_name}
+                  </a>
+                  <span className="text-gray-600 ml-2">
+                    {rec.product_price ? `$${rec.product_price}` : 'Price N/A'} ({rec.source})
+                  </span>
+                </div>
+                {!rec.approved ? (
+                  <button
+                    onClick={() => approveRecommendation(rec.id)}
+                    className="ml-4 bg-blue-500 text-white py-1 px-4 rounded-lg hover:bg-blue-600 transition"
+                  >
+                    Approve
+                  </button>
+                ) : (
+                  <span className="text-green-600 font-medium ml-4">Approved</span>
+                )}
+              </li>
+            ))
+          ) : (
+            <li className="text-gray-600">No recommendations yet.</li>
+          )}
+        </ul>
+      </div>
+    </li>
+  );
+};
 
 const Alert = ({ text }: { text: string }) => (
   <div className="rounded-md bg-red-100 p-4 my-3">

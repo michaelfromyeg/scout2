@@ -1,5 +1,8 @@
 {
   "files.insertFinalNewline": true,
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "always"
+  },
   "python.analysis.extraPaths": ["./computer-use-demo"]
 }

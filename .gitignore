@@ -3,6 +3,7 @@
 claude/run.sh
 run.sh
 .env
+server/tmp
 
 ### Python.gitignore
 
