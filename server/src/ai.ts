@@ -103,6 +103,10 @@ export async function buy(recommendation: Recommendation) {
   }
 }
 
+export async function buy2(recommendation: Recommendation) {
+  console.log("Kick-off email sent for", recommendation)
+}
+
 // TODO(michaelfromyeg): include urgency
 // TODO(michaelfromyeg): add URL formatting options
 function query(wish: Wish) {

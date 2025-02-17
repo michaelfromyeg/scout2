@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
-import { browse } from './ai';
+import { browse, buy } from './ai';
 import { Recommendation, Wish } from './types';
 // import { WISH_0 } from './mocks';
 
@@ -51,9 +51,9 @@ const triggerAIProcessing = async (wish: Wish) => {
 const triggerAIProcessingPostApproval = async (recommendation: Recommendation) => {
   console.log("Would process new recommendation:", recommendation);
 
-  // await Promise.all([
-  //   buy(recommendation)
-  // ])
+  await Promise.all([
+    buy(recommendation)
+  ])
 }
 
 // if __name__ == "__main__" ...
